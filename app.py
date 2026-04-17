@@ -30,7 +30,7 @@ try:
         
         /* Empujamos el contenido hacia el centro/abajo de la pantalla */
         .block-container {{
-            padding-top: 55vh; /* 🔥 AJUSTA ESTO: 50vh, 60vh etc. para bajar o subir el reproductor */
+            padding-top: 65vh; /* 🔥 AJUSTA ESTO: 50vh, 60vh etc. para bajar o subir el reproductor */
             text-align: center;
         }}
         
