@@ -12,28 +12,36 @@ st.markdown("""
     .block-container {
         padding: 0rem;
         max-width: 100%; 
-        text-align: center;
-        overflow: hidden; /* Evita que la página haga scroll extra */
+        position: relative; /* Esto convierte a la pantalla en nuestro lienzo */
     }
     
-    /* 1. Subimos el texto hacia la zona blanca */
+    /* 1. Pegatina del TEXTO */
+    .contenedor-texto {
+        position: absolute;
+        top: 60%; /* 🔥 Para subir el texto baja este número (ej. 50%), para bajarlo súbelo (ej. 70%) */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        text-align: center;
+        z-index: 10;
+    }
+    
     .texto-nino {
-        color: #d81b60; /* Rosado oscuro para que resalte */
+        color: #d81b60;
         font-size: 26px;
         font-weight: bold;
-        text-shadow: 1px 1px 2px white;
-        margin-top: -65vh; /* 🔥 AJUSTA ESTE NÚMERO: -60vh, -50vh para subir o bajar el texto */
-        position: relative;
-        z-index: 10;
+        /* Le puse un borde blanco más fuerte por si toca alguna flor de fondo */
+        text-shadow: 2px 2px 4px white, -2px -2px 4px white, 2px -2px 4px white, -2px 2px 4px white; 
     }
     
-    /* 2. Forzamos al reproductor de audio a subir con el texto */
-    [data-testid="stAudio"] {
-        position: relative;
+    /* 2. Pegatina del AUDIO */
+    div[data-testid="stAudio"] {
+        position: absolute;
+        top: 70%; /* 🔥 Este debe ser unos 10 números mayor que el del texto para quedar justo debajo */
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
         z-index: 10;
-        width: 80%; /* Lo hace un poco más estrecho y elegante */
-        margin: 10px auto 0px auto; /* Lo centra perfectamente debajo del texto */
-        padding-bottom: 60vh; /* Da espacio virtual abajo para que se mantenga arriba */
     }
     </style>
     """, unsafe_allow_html=True)
@@ -43,16 +51,16 @@ parametros = st.query_params
 if "hijo" in parametros:
     nombre_nino = parametros["hijo"]
     
-    # Ponemos la imagen de fondo primero
+    # 1. El lienzo (la imagen)
     try:
         st.image("dia_de_la_madre_image.jpg", use_container_width=True)
     except FileNotFoundError:
         st.warning("⚠️ Recuerda colocar tu imagen.")
         
-    # Colocamos el texto
-    st.markdown(f'<div class="texto-nino">Un mensaje de {nombre_nino.capitalize()} ❤️</div>', unsafe_allow_html=True)
+    # 2. Imprimimos el texto flotante
+    st.markdown(f'<div class="contenedor-texto"><span class="texto-nino">Un mensaje de {nombre_nino.capitalize()} ❤️</span></div>', unsafe_allow_html=True)
     
-    # Colocamos el audio
+    # 3. Imprimimos el audio flotante
     ruta_audio = f"audios/{nombre_nino.lower()}.mp3"
     
     if os.path.exists(ruta_audio):
