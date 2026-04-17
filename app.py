@@ -1,66 +1,61 @@
 import streamlit as st
+import base64
 import os
 
-st.set_page_config(page_title="¡Feliz Día de la Madre!", page_icon="❤️", layout="wide")
+st.set_page_config(page_title="¡Feliz Día de la Madre!", page_icon="❤️", layout="centered")
 
-st.markdown("""
-    <style>
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    .block-container {
-        padding: 0rem;
-        max-width: 100%; 
-        position: relative; /* Esto convierte a la pantalla en nuestro lienzo */
-    }
-    
-    /* 1. Pegatina del TEXTO */
-    .contenedor-texto {
-        position: absolute;
-        top: 60%; /* 🔥 Para subir el texto baja este número (ej. 50%), para bajarlo súbelo (ej. 70%) */
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        text-align: center;
-        z-index: 10;
-    }
-    
-    .texto-nino {
-        color: #d81b60;
-        font-size: 26px;
-        font-weight: bold;
-        /* Le puse un borde blanco más fuerte por si toca alguna flor de fondo */
-        text-shadow: 2px 2px 4px white, -2px -2px 4px white, 2px -2px 4px white, -2px 2px 4px white; 
-    }
-    
-    /* 2. Pegatina del AUDIO */
-    div[data-testid="stAudio"] {
-        position: absolute;
-        top: 70%; /* 🔥 Este debe ser unos 10 números mayor que el del texto para quedar justo debajo */
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 80%;
-        z-index: 10;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# 1. Función para convertir tu imagen en el fondo de la pantalla
+def obtener_base64(ruta_archivo):
+    with open(ruta_archivo, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
+try:
+    img_base64 = obtener_base64("dia_de_la_madre_image.jpg")
+    
+    # CSS para colocar el fondo y ajustar las posiciones
+    st.markdown(f"""
+        <style>
+        #MainMenu {{visibility: hidden;}}
+        header {{visibility: hidden;}}
+        footer {{visibility: hidden;}}
+        
+        /* Convertimos la imagen en el fondo que cubre todo */
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{img_base64}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }}
+        
+        /* Empujamos el contenido hacia el centro/abajo de la pantalla */
+        .block-container {{
+            padding-top: 55vh; /* 🔥 AJUSTA ESTO: 50vh, 60vh etc. para bajar o subir el reproductor */
+            text-align: center;
+        }}
+        
+        .texto-nino {{
+            color: #d81b60;
+            font-size: 26px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px white, -2px -2px 4px white, 2px -2px 4px white, -2px 2px 4px white;
+            margin-bottom: 20px;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
+except FileNotFoundError:
+    st.warning("⚠️ No se encontró 'dia_de_la_madre_image.jpg'.")
+
+# 2. Leemos quién es el niño
 parametros = st.query_params
 
 if "hijo" in parametros:
     nombre_nino = parametros["hijo"]
     
-    # 1. El lienzo (la imagen)
-    try:
-        st.image("dia_de_la_madre_image.jpg", use_container_width=True)
-    except FileNotFoundError:
-        st.warning("⚠️ Recuerda colocar tu imagen.")
-        
-    # 2. Imprimimos el texto flotante
-    st.markdown(f'<div class="contenedor-texto"><span class="texto-nino">Un mensaje de {nombre_nino.capitalize()} ❤️</span></div>', unsafe_allow_html=True)
+    # 3. Mostramos el texto
+    st.markdown(f'<div class="texto-nino">Un mensaje de {nombre_nino.capitalize()} ❤️</div>', unsafe_allow_html=True)
     
-    # 3. Imprimimos el audio flotante
+    # 4. Mostramos el audio
     ruta_audio = f"audios/{nombre_nino.lower()}.mp3"
     
     if os.path.exists(ruta_audio):
@@ -71,4 +66,5 @@ if "hijo" in parametros:
         st.error(f"No se encontró el audio de {nombre_nino}.")
 
 else:
-    st.info("Por favor, escanea el código QR para ver tu sorpresa.")
+    # Agregamos un fondo blanco al mensaje principal para que se lea bien sobre las flores
+    st.markdown('<div style="background-color: rgba(255,255,255,0.8); padding: 20px; border-radius: 10px;">Por favor, escanea el código QR para ver tu sorpresa.</div>', unsafe_allow_html=True)
