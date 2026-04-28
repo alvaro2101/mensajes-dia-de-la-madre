@@ -84,24 +84,24 @@ if "hijo" in parametros:
     
     st.markdown(f'<div class="texto-nino">Un mensaje de {nombre_nino.capitalize()}</div>', unsafe_allow_html=True)
     
-    ruta_audio = f"audios/{nombre_nino.lower()}.mp3"
+    ruta_audio = f"audios/{nombre_nino.lower()}.m4a"
     
     if os.path.exists(ruta_audio):
         audio_file = open(ruta_audio, 'rb')
         audio_bytes = audio_file.read()
         
-        # El reproductor de siempre
-        st.audio(audio_bytes, format='audio/mp3')
+        # Le decimos a Streamlit que el formato es mp4/m4a
+        st.audio(audio_bytes, format='audio/mp4')
         
         # La frase bonita debajo
         st.markdown('<div class="frase-poetica">"No hay sonido más dulce que la voz de quien te llama Mamá"</div>', unsafe_allow_html=True)
         
-        # Botón para descargar el audio
+        # Botón para descargar el audio (también actualizado a .m4a)
         st.download_button(
             label="📥 Guardar este hermoso recuerdo",
             data=audio_bytes,
-            file_name=f"mensaje_de_{nombre_nino}.mp3",
-            mime="audio/mp3"
+            file_name=f"mensaje_de_{nombre_nino}.m4a",
+            mime="audio/mp4"
         )
     else:
         st.error(f"No se encontró el audio de {nombre_nino}.")
