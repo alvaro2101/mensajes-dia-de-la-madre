@@ -8,7 +8,7 @@ import os
 st.set_page_config(
     page_title="¡Feliz Día de la Madre!",
     page_icon="❤️",
-    layout="centered",         # 'centered' limita el ancho máximo (~730 px)
+    layout="centered",
     initial_sidebar_state="collapsed",
 )
 
@@ -17,21 +17,15 @@ st.set_page_config(
 #  HELPERS
 # ─────────────────────────────────────────────
 def obtener_base64(ruta_archivo: str) -> str:
-    """Convierte un archivo binario a cadena base64."""
     with open(ruta_archivo, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
 
 # ─────────────────────────────────────────────
-#  ESTILOS GLOBALES  (Mobile-First)
+#  ESTILOS GLOBALES
 # ─────────────────────────────────────────────
 def inyectar_estilos(img_base64: str | None = None) -> None:
-    """
-    Inyecta todos los estilos CSS una sola vez.
-    Separar CSS del HTML mejora la legibilidad y evita duplicar <style>.
-    """
 
-    # Fondo: imagen si existe, degradado de respaldo si no
     fondo_css = (
         f'url("data:image/jpg;base64,{img_base64}")'
         if img_base64
@@ -45,145 +39,152 @@ def inyectar_estilos(img_base64: str | None = None) -> None:
         #MainMenu, header, footer {{ visibility: hidden; }}
 
         /* ── FONDO ──
-           top center: el borde superior de la imagen siempre
-           coincide con el borde superior del viewport.
-           Esto hace que la posición de cada zona de la imagen
-           sea predecible sin importar el tamaño de pantalla. */
+           top center: la parte superior de la imagen siempre
+           queda fija en el tope del viewport. Asi el padding-top
+           apunta siempre a la misma zona de la imagen. */
         .stApp {{
             background: {fondo_css} top center / cover no-repeat;
-            background-attachment: scroll; /* 'fixed' rompe en iOS Safari */
+            background-attachment: scroll;   /* 'fixed' rompe en iOS Safari */
         }}
 
         /* ─────────────────────────────────────────
-           CONTENEDOR PRINCIPAL — apunta a la zona
-           blanca vacía de la imagen (~42 % – 77 %).
-
-           padding-top: 44vh  → empieza justo debajo
-           del título "Feliz Día Mamita" (~42 % altura).
-           max-height: 33vh   → no se desborda hacia
-           las flores inferiores (~77 % altura).
+           CONTENEDOR PRINCIPAL
+           ─────────────────────────────────────────
+           Medicion real de la captura (Android):
+             Zona blanca de la imagen: ~42% a ~74% del alto
+             padding-top = 40vh empieza justo debajo del titulo
+             El bloque completo mide ~26vh y termina en ~66vh,
+             bien antes de las flores inferiores (~74vh)
         ───────────────────────────────────────── */
         .block-container {{
-            padding-top: 44vh !important;
-            padding-bottom: 0 !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            padding-top:    40vh !important;
+            padding-bottom: 0    !important;
+            padding-left:   1rem !important;
+            padding-right:  1rem !important;
             text-align: center;
             z-index: 10;
-            max-width: 420px !important;
+            max-width: 400px !important;
             margin: 0 auto !important;
         }}
 
-        /* En pantallas más pequeñas (< 380 px de alto,
-           p.ej. iPhone SE horizontal) bajamos un poco */
-        @media (max-height: 600px) {{
-            .block-container {{
-                padding-top: 40vh !important;
-            }}
-        }}
-
-        /* Tablet / desktop: la imagen deja más aire */
+        /* Tablet / desktop */
         @media (min-width: 600px) {{
             .block-container {{
-                padding-top: 46vh !important;
-                max-width: 520px !important;
+                padding-top: 43vh !important;
+                max-width: 500px !important;
             }}
         }}
 
-        /* ── TARJETA — sin fondo, la imagen ya es blanca ahí ── */
+        /* ── ELIMINAR margenes internos de Streamlit ──
+           Cada st.audio, st.markdown y st.columns agrega ~1rem
+           de separacion vertical. Lo forzamos a cero para que
+           el bloque sea lo mas compacto posible. */
+        div[data-testid="stVerticalBlock"] > div,
+        div[data-testid="stVerticalBlockBorderWrapper"] > div {{
+            gap: 0 !important;
+            row-gap: 0 !important;
+        }}
+        .element-container {{
+            margin-top:    0 !important;
+            margin-bottom: 0 !important;
+        }}
+
+        /* ── TARJETA — fondo transparente (zona ya es blanca) ── */
         .tarjeta {{
-            background: transparent;
-            padding: 0 8px 12px;
-            margin-bottom: 4px;
+            background:    transparent;
+            padding:       0 8px 4px;
+            margin-bottom: 0;
         }}
 
-        /* ── NOMBRE DEL NIÑO ── */
+        /* ── NOMBRE DEL NINO ── */
         .texto-nino {{
-            color: #c2185b;
-            font-size: clamp(18px, 5.5vw, 26px);
-            font-weight: 700;
-            margin-bottom: 6px;
-            line-height: 1.3;
+            color:         #c2185b;
+            font-size:     clamp(17px, 5vw, 24px);
+            font-weight:   700;
+            margin-bottom: 0;
+            line-height:   1.3;
         }}
 
-        /* ── FRASE POÉTICA ── */
+        /* ── FRASE POETICA ── */
         .frase-poetica {{
-            color: #880e4f;
-            font-size: clamp(12px, 3.8vw, 15px);
-            font-style: italic;
-            margin-top: 6px;
-            margin-bottom: 2px;
-            line-height: 1.5;
+            color:         #880e4f;
+            font-size:     clamp(11px, 3.5vw, 14px);
+            font-style:    italic;
+            margin-top:    3px;
+            margin-bottom: 0;
+            line-height:   1.4;
         }}
 
-        /* ── BOTÓN DE DESCARGA ──
-           Streamlit genera un <a> dentro de un div con
-           data-testid="stDownloadButton".
-           Lo sobreescribimos para que ocupe todo el ancho
-           disponible y sea fácil de tocar en móvil. */
+        /* ── REPRODUCTOR DE AUDIO ── */
+        div[data-testid="stAudio"] {{
+            margin-top:    4px !important;
+            margin-bottom: 0   !important;
+        }}
+        audio {{
+            width:         100%  !important;
+            border-radius: 10px;
+            margin-top:    0;
+            margin-bottom: 0;
+        }}
+
+        /* ── BOTON DE DESCARGA ── */
         div[data-testid="stDownloadButton"] {{
-            display: flex;
+            display:         flex;
             justify-content: center;
-            margin-top: 8px;
+            margin-top:      6px  !important;
+            margin-bottom:   0    !important;
         }}
 
         div[data-testid="stDownloadButton"] > button,
         div[data-testid="stDownloadButton"] > a {{
-            background: linear-gradient(135deg, #e91e8c, #f06292) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 50px !important;
-            padding: 14px 32px !important;      /* área de toque generosa */
-            font-size: clamp(14px, 4vw, 16px) !important;
-            font-weight: 600 !important;
-            width: 100% !important;             /* ancho completo en móvil */
-            max-width: 320px !important;
-            cursor: pointer !important;
-            box-shadow: 0 4px 20px rgba(233, 30, 140, 0.35) !important;
-            transition: transform 0.15s, box-shadow 0.15s !important;
-            text-align: center !important;
-            display: block !important;
+            background:    linear-gradient(135deg, #e91e8c, #f06292) !important;
+            color:         white    !important;
+            border:        none     !important;
+            border-radius: 50px    !important;
+            padding:       11px 28px !important;
+            font-size:     clamp(13px, 4vw, 15px) !important;
+            font-weight:   600     !important;
+            width:         100%    !important;
+            max-width:     300px   !important;
+            cursor:        pointer  !important;
+            box-shadow:    0 4px 18px rgba(233, 30, 140, 0.35) !important;
+            transition:    transform 0.15s, box-shadow 0.15s   !important;
+            text-align:    center   !important;
+            display:       block    !important;
         }}
 
         div[data-testid="stDownloadButton"] > button:hover,
         div[data-testid="stDownloadButton"] > a:hover {{
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 24px rgba(233, 30, 140, 0.5) !important;
+            transform:  translateY(-2px) !important;
+            box-shadow: 0 6px 22px rgba(233, 30, 140, 0.5) !important;
         }}
 
-        /* ── REPRODUCTOR DE AUDIO ── */
-        audio {{
-            width: 100% !important;
-            border-radius: 12px;
-            margin-top: 6px;
-            margin-bottom: 0;
-        }}
-
-        /* Streamlit envuelve st.audio en stAudio */
-        div[data-testid="stAudio"] {{
-            margin-top: 4px !important;
+        /* ── COLUMNAS para centrar el boton ── */
+        div[data-testid="stHorizontalBlock"] {{
+            gap:           0 !important;
+            margin-top:    0 !important;
             margin-bottom: 0 !important;
         }}
 
-        /* ── MENSAJE ERROR / WARNING ── */
+        /* ── ALERTAS ── */
         div[data-testid="stAlert"] {{
             border-radius: 12px;
         }}
 
         /* ─────────────────────────────────────────
-           ANIMACIÓN DE CORAZONES FLOTANTES
+           CORAZONES FLOTANTES
         ───────────────────────────────────────── */
         @keyframes lluvia {{
-            0%   {{ transform: translateY(-10vh) scale(0.5); opacity: 0.8; }}
-            100% {{ transform: translateY(105vh)  scale(1.2); opacity: 0; }}
+            0%   {{ transform: translateY(-10vh) scale(0.5); opacity: 0.9; }}
+            100% {{ transform: translateY(105vh) scale(1.2); opacity: 0;   }}
         }}
 
         .corazon {{
-            position: fixed;          /* fixed > absolute para no desplazar layout */
-            pointer-events: none;     /* no interfiere con clics del usuario */
-            font-size: 22px;
-            animation: lluvia linear infinite;
-            z-index: 0;
+            position:       fixed;
+            pointer-events: none;
+            font-size:      20px;
+            animation:      lluvia linear infinite;
+            z-index:        0;
         }}
         .c1 {{ left: 8%;  animation-duration: 5.0s; animation-delay: 0.0s; }}
         .c2 {{ left: 25%; animation-duration: 7.0s; animation-delay: 1.0s; }}
@@ -197,7 +198,7 @@ def inyectar_estilos(img_base64: str | None = None) -> None:
 
 
 # ─────────────────────────────────────────────
-#  CORAZONES FLOTANTES  (HTML separado del CSS)
+#  CORAZONES FLOTANTES
 # ─────────────────────────────────────────────
 def mostrar_corazones() -> None:
     st.markdown(
@@ -213,37 +214,34 @@ def mostrar_corazones() -> None:
 
 
 # ─────────────────────────────────────────────
-#  LÓGICA PRINCIPAL
+#  LOGICA PRINCIPAL
 # ─────────────────────────────────────────────
 def main() -> None:
-    # 1. Cargar imagen de fondo (opcional)
+    # 1. Fondo
     img_b64 = None
     try:
         img_b64 = obtener_base64("dia_de_la_madre_image.jpg")
     except FileNotFoundError:
-        pass  # Se usará el degradado CSS de respaldo
+        pass
 
-    # 2. Inyectar estilos UNA sola vez
+    # 2. Estilos (una sola vez)
     inyectar_estilos(img_b64)
 
-    # 3. Corazones decorativos (posición fija, no afectan al layout)
+    # 3. Corazones decorativos
     mostrar_corazones()
 
-    # 4. Leer parámetro de URL  (?hijo=sofia)
-    parametros = st.query_params
+    # 4. Parametro de URL  ?hijo=sofia
+    parametros  = st.query_params
     nombre_nino = parametros.get("hijo", "").strip()
 
     if nombre_nino:
-        # ── Vista personalizada ──────────────────
         nombre_display = nombre_nino.capitalize()
 
-        # Tarjeta de bienvenida
+        # Nombre
         st.markdown(
-            f"""
-            <div class="tarjeta">
-                <div class="texto-nino">Un mensaje de {nombre_display} 🌸</div>
-            </div>
-            """,
+            f'<div class="tarjeta">'
+            f'<div class="texto-nino">Un mensaje de {nombre_display} 🌸</div>'
+            f'</div>',
             unsafe_allow_html=True,
         )
 
@@ -254,43 +252,38 @@ def main() -> None:
             with open(ruta_audio, "rb") as af:
                 audio_bytes = af.read()
 
-            # Reproductor nativo
             st.audio(audio_bytes, format="audio/mp4")
 
-            # Frase poética
+            # Frase
             st.markdown(
                 '<div class="frase-poetica">'
-                '"No hay sonido más dulce que la voz de quien te llama Mamá"'
-                "</div>",
+                '"No hay sonido mas dulce que la voz de quien te llama Mama"'
+                '</div>',
                 unsafe_allow_html=True,
             )
 
-            # ── BOTÓN DE DESCARGA ──────────────────
-            # Se centra automáticamente gracias a los estilos CSS.
-            # Usamos st.columns para alinearlo en escritorio también.
-            col_izq, col_btn, col_der = st.columns([1, 3, 1])
+            # Boton centrado con columnas
+            _, col_btn, _ = st.columns([1, 3, 1])
             with col_btn:
                 st.download_button(
                     label="💌 Guardar este hermoso recuerdo",
                     data=audio_bytes,
                     file_name=f"mensaje_de_{nombre_nino.lower()}.m4a",
                     mime="audio/mp4",
-                    use_container_width=True,   # ancho del contenedor (col_btn)
+                    use_container_width=True,
                 )
         else:
-            st.error(f"No se encontró el audio de {nombre_display}.")
+            st.error(f"No se encontro el audio de {nombre_display}.")
 
     else:
-        # ── Vista genérica (sin parámetro) ───────
+        # Vista sin parametro
         st.markdown(
-            """
-            <div class="tarjeta">
-                <div class="texto-nino">¡Feliz Día de la Madre! ❤️</div>
-                <div class="frase-poetica">
-                    Escanea el código QR de tu hijo/a<br>para ver un mensaje especial.
-                </div>
-            </div>
-            """,
+            '<div class="tarjeta">'
+            '<div class="texto-nino">¡Feliz Dia de la Madre! ❤️</div>'
+            '<div class="frase-poetica">'
+            'Escanea el codigo QR de tu hijo/a<br>para ver su mensaje especial.'
+            '</div>'
+            '</div>',
             unsafe_allow_html=True,
         )
 
