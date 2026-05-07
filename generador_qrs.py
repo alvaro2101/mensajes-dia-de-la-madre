@@ -18,13 +18,13 @@ nombres_ninos = [
 # 3. La URL base de tu página web
 # OJO: Por ahora usamos localhost para probar en tu computadora. 
 # Justo antes de imprimir los QR finales, cambiaremos esto por el enlace real de Streamlit Cloud.
-url_base = "http://localhost:8501/?hijo="
+url_base = "https://mensajes-dia-de-la-madre-pcc6fiwu8uy8mg36jesup5.streamlit.app/?hijo="
 
 print("Generando códigos QR de la clase...")
 
 # 4. Bucle para crear un QR por cada niño
 for nombre in nombres_ninos:
-    # Construimos el enlace único (ej: http://localhost:8501/?hijo=mateo)
+
     enlace_personalizado = f"{url_base}{nombre}"
     
     # Generamos la imagen del código QR
